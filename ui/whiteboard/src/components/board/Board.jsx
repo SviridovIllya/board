@@ -1,12 +1,23 @@
 import React from "react";
 import './style.css'
+import io from 'socket.io-client';
 
 class Board extends React.Component{
 
     timeout;
 
+    socket = io.connect("http://localhost:3000")
     constructor(props) {
         super(props);
+        this.socket.on("canvas-data",function (data){
+            var image = new Image();
+            var canvas = document.querySelector('#board');
+            var ctx = canvas.getContext('2d');
+            image.onload = function (){
+                ctx.drawImage(image,0,0);
+            }
+            image.src=data;
+        })
     }
 
     componentDidMount() {
@@ -62,7 +73,7 @@ class Board extends React.Component{
             if(root.timeout != undefined) clearTimeout(root.timeout);
             root.timeout = setTimeout(function(){
                 var base64ImageData = canvas.toDataURL("image/png");
-                root.socket.emit("canvas-data", base64ImageData);
+                root.socket.emit("canvas-data",base64ImageData);
             }, 1000)
         };
     }
